@@ -1,47 +1,43 @@
-document.getElementById('studentLoginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    const studentTableBody = document.getElementById('studentTableBody');
 
-    const form = e.target;
-    const formData = new FormData(form);
-    const formObject = Object.fromEntries(formData.entries());
+    fetch('http://localhost:3000/students')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Student data:', data);
+            studentTableBody.innerHTML = ''; 
+            data.forEach(student => {
+                const row = document.createElement('tr');
 
-    try {
-        const response = await fetch('/students/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formObject)
+                const fullNameCell = document.createElement('td');
+                fullNameCell.textContent = `${student.firstName} ${student.middleName} ${student.lastName}`;
+                row.appendChild(fullNameCell);
+
+                const emailCell = document.createElement('td');
+                emailCell.textContent = student.email;
+                row.appendChild(emailCell);
+
+                const dobCell = document.createElement('td');
+                dobCell.textContent = new Date(student.dateOfBirth).toLocaleDateString();
+                row.appendChild(dobCell);
+
+                const genderCell = document.createElement('td');
+                genderCell.textContent = student.gender;
+                row.appendChild(genderCell);
+
+                const phoneNumberCell = document.createElement('td');
+                phoneNumberCell.textContent = student.phoneNumber;
+                row.appendChild(phoneNumberCell);
+
+                studentTableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching student data:', error);
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            alert(`Login successful for student: ${data.firstName} ${data.lastName}`);
-            window.location.href = 'studentProfile.html';
-        } else {
-            const errorData = await response.json();
-            alert(`Login failed: ${errorData.message}`);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred during login.');
-    }
 });
-
-async function fetchStudentProfile() {
-    try {
-        const response = await fetch('/students/profile');
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('studentProfile').innerText = JSON.stringify(data, null, 2);
-        } else {
-            const errorData = await response.json();
-            alert(`Failed to fetch profile: ${errorData.message}`);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while fetching the profile.');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', fetchStudentProfile);
