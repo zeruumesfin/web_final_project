@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grade Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: orange;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form id="gradeForm">
+      <h2>Register Grade</h2>
+      <div class="form-group">
+        <label for="subjectSelect">Subject:</label>
+        <select id="subjectSelect" required>
+          <option value="">Select a subject</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="classroomSelect">Classroom:</label>
+        <select id="classroomSelect" onchange="fetchStudents()" required>
+          <option value="">Select a classroom</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="studentSelect">Student:</label>
+        <select id="studentSelect" required>
+          <option value="">Select a student</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="assignment">Assignment:</label>
+        <input type="number" id="assignment" min="0" max="100" required>
+      </div>
+      <div class="form-group">
+        <label for="midTerm">Mid Term:</label>
+        <input type="number" id="midTerm" min="0" max="100" required>
+      </div>
+      <div class="form-group">
+        <label for="finalExam">Final Exam:</label>
+        <input type="number" id="finalExam" min="0" max="100" required>
+      </div>
+      <button class="btn" onclick="registerGrade()">Submit</button>
+    </form>
+      <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    // Fetch and populate subjects
+    fetch('http://localhost:3000/gradebook/subjects')
+      .then(response => response.json())
+      .then(data => {
+        const subjectSelect = document.getElementById('subjectSelect');
+        data.forEach(subject => {
+          const option = document.createElement('option');
+          option.value = subject.subject_id;
+          option.textContent = subject.subject_name;
+          subjectSelect.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Error fetching subjects:', error));
+
+    // Fetch and populate classrooms
+    fetch('http://localhost:3000/gradebook/classrooms')
+      .then(response => response.json())
+      .then(data => {
+        const classroomSelect = document.getElementById('classroomSelect');
+        data.forEach(classroom => {
+          const option = document.createElement('option');
+          option.value = classroom.classroom_id;
+          option.textContent = classroom.classroom_name;
+          classroomSelect.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Error fetching classrooms:', error));
+
+    // Fetch and populate students based on the selected classroom
+    function fetchStudents() {
+      const classroomId = document.getElementById('classroomSelect').value;
+      const studentSelect = document.getElementById('studentSelect');
+      studentSelect.innerHTML = '<option value="">Select a student</option>'; // Clear previous options
+
+      if (!classroomId) return;
+
+      fetch(`http://localhost:3000/gradebook/student/${classroomId}`)
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.id;
+            option.textContent = `${student.firstName} ${student.middleName} ${student.lastName}`;
+            studentSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error fetching students:', error));
+    }
+
+    // Register grade
+    function registerGrade() {
+      const subjectId = document.getElementById('subjectSelect').value;
+      const classroomId = document.getElementById('classroomSelect').value;
+      const studentId = document.getElementById('studentSelect').value;
+      const assignment = document.getElementById('assignment').value;
+      const midTerm = document.getElementById('midTerm').value;
+      const finalExam = document.getElementById('finalExam').value;
+      const year = document.getElementById('year').value;
+
+      // Validate inputs
+      if (!subjectId || !classroomId || !studentId || !assignment || !midTerm || !finalExam || !year) {
+        alert('Please fill out all fields before submitting.');
+        return;
+      }
+
+      const gradeData = {
+        studentId: parseInt(studentId),
+        subjectId: parseInt(subjectId),
+        assignment: parseFloat(assignment),
+        midTerm: parseFloat(midTerm),
+        finalExam: parseFloat(finalExam),
+        year: parseInt(year)
+      };
+
+      fetch('http://localhost:3000/gradebook/grade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gradeData)
+      })
+      .then(data => {
+        
+        alert('Grade registered successfully!');
+        document.getElementById('message').textContent = 'Grade registered successfully!';
+        document.getElementById('message').style.color = 'green';
+        document.getElementById('gradeForm').reset();
+      })
+      .catch(error => {
+        document.getElementById('message').textContent = 'Error: ' + error.message;
+        document.getElementById('message').style.color = 'red';
+      });
+    }
+  </script>
+</body>
+</html>

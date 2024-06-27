@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Log-in</title>
+        <link rel="stylesheet" href="/css/login.css">
+        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    </head>
+    <body>
+        <header>
+            <h2 class="logo">Web Dev </h2> 
+            <nav class="navigation">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </header>
+        <div class="wraper">
+            <div class="form-box login">
+                <h2>Log-in</h2>
+                <form id="loginForm" onsubmit="login(); return false;">
+                    <div class="input-box">
+                        <span class="icon"><i class='bx bxs-envelope'></i></span>
+                        <input type="email" id="username" required>
+                        <label>email</label>
+                    </div>
+                    <div class="input-box">
+                        <span class="icon"><i class='bx bxs-lock-alt'></i></span>
+                        <input type="password" id="password" required>
+                        <label>password</label>
+                    </div>
+                    <div class="remember-forget">
+                        <label><input type="checkbox">remember me</label>
+                        <a href="forget.html">forget password</a>
+                    </div>
+                    <button type="submit" class="btn">Log in</button>
+                    <div class="register">
+                        <p>Don't have an account? <a href="reg.html">Register</a></p>
+                    </div>
+                    <p id="message"></p>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function login() {
+  // Get the input values
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  // Validate inputs
+  if (!username || !password) {
+    alert('Please fill out both fields.');
+    return;
+  }
+
+  // Prepare the request payload
+  const loginData = {
+    username: username,
+    password: password
+  };
+
+  // Disable the button to prevent multiple submissions
+  document.querySelector('.btn').disabled = true;
+
+  // Send the POST request
+  fetch('http://localhost:3000/auth/validate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(loginData)
+  })
+  .then(response => {
+    // Enable the button again
+    document.querySelector('.btn').disabled = false;
+
+    if (!response.ok) {
+      throw new Error('Invalid login credentials');
+    }
+    return response.json();
+  })
+  .then(data => {
+    if(data.code === 200){
+      document.getElementById('message').textContent = 'Login successful!';
+      document.getElementById('message').style.color = 'green';
+      console.log('Success:', data);
+
+      if(data.data.role === 'STUDENT'){
+        console.log('Role:', 'STUDENT');
+        window.location.href = 'student.html';
+      }
+      else if(data.data.role === 'TEACHER'){
+        console.log('Role:', 'TEACHER');
+        window.location.href = 'teacher.html';
+      } else if(data.data.role === 'ADMIN'){
+        console.log('Role:', 'ADMIN');
+        window.location.href = 'admin.html'; // Redirect to admin page if applicable
+      }
+    }
+    else {
+      document.getElementById('message').textContent = 'Login failed: ' + data.message;
+      document.getElementById('message').style.color = 'red';
+    }
+  })
+  .catch(error => {
+    document.getElementById('message').textContent = 'Login failed: ' + error.message;
+    document.getElementById('message').style.color = 'red';
+    console.error('Error:', error);
+  });
+}
+
+          </script>
+    </body>
+</html>

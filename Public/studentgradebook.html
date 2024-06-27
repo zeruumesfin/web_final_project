@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Gradebook</title>
+<style>
+    
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: white; /* Fixed typo in background-color */
+    }
+    header {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 10px 0;
+    }
+    table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: orange;
+        color: white;
+    }
+    tr:nth-child(even) {
+        background-color: #ddd;
+    }
+    tr:hover {
+        background-color: #555;
+    }
+    footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 10px 0;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+   
+    .avatar {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: orange;
+        color: white;
+        text-align: center;
+        line-height: 40px;
+        font-size: 20px;
+        margin-right: 10px;
+    }
+
+</style>
+</head>
+
+<body>
+    <header>
+        <h1>Gradebook</h1>
+        <form>
+            <label for="year">Year:</label>
+            <select id="year" name="year">
+                <option value="">Select a year</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021 1">2021</option>
+            </select>
+        </form>
+    </header>
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Assignment</th>
+                <th>Midterm</th>
+                <th>Final</th>
+                <th>Total</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody id="gradesTableBody">
+            <!-- Table rows will be populated here by JavaScript -->
+        </tbody>
+    </table>
+    <footer>
+        <p>&copy; 2024 Gradebook. All rights reserved.</p>
+    </footer>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+  const yearSelect = document.getElementById('year');
+  const gradesTableBody = document.getElementById('gradesTableBody');
+
+  const handleSelectChange = () => {
+    const year = yearSelect.value;
+
+    if (year) {
+      fetch(`http://localhost:3000/gradebook/grades/1/${year}`)
+        .then(response => response.json())
+        .then(data => {
+          gradesTableBody.innerHTML = ''; // Clear existing rows
+          data.forEach(grade => {
+            const row = document.createElement('tr');
+
+            const courseNameCell = document.createElement('td');
+            courseNameCell.textContent = grade.subject.name;
+            row.appendChild(courseNameCell);
+
+            const assignmentCell = document.createElement('td');
+            assignmentCell.textContent = grade.assignmentGrade;
+            row.appendChild(assignmentCell);
+
+            const midtermCell = document.createElement('td');
+            midtermCell.textContent = grade.midTermGrade;
+            row.appendChild(midtermCell);
+
+            const finalCell = document.createElement('td');
+            finalCell.textContent = grade.finalGrade;
+            row.appendChild(finalCell);
+
+            const totalCell = document.createElement('td');
+            totalCell.textContent = grade.totalGrade.toFixed(1);
+            row.appendChild(totalCell);
+
+            const gradeCell = document.createElement('td');
+            gradeCell.textContent = grade.student.classroom.name;
+            row.appendChild(gradeCell);
+
+            gradesTableBody.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching grades:', error);
+        });
+    }
+  };
+
+  // Attach event listener to the select element
+  yearSelect.addEventListener('change', handleSelectChange);
+});
+
+   
+        function checkMediaQuery(query) {
+            return window.matchMedia(query).matches;
+        }
+
+        
+        function handleResponsiveChanges() {
+           
+            if (checkMediaQuery('(max-width: 576px)')) {
+                
+            } else if (checkMediaQuery('(min-width: 577px) and (max-width: 768px)')) {
+                
+            } else if (checkMediaQuery('(min-width: 769px) and (max-width: 1024px)')) {
+              
+            } else if (checkMediaQuery('(min-width: 1025px) and (max-width: 1199px)')) {
+                
+            } else if (checkMediaQuery('(min-width: 1200px) and (max-width: 1600px)')) {
+                
+            } else {
+             
+            }
+        }
+
+        handleResponsiveChanges();
+        window.addEventListener('resize', handleResponsiveChanges);
+              
+   </script>
+</body>
+</html>
